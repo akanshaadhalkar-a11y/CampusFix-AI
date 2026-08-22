@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import CreateOrganizationAPIView,JoinOrganizationAPIView,OrganizationMembersAPIView
+from .views import CreateOrganizationAPIView,JoinOrganizationAPIView,OrganizationMembersAPIView,ChangeMemberRoleAPIView
 
 
 urlpatterns = [
@@ -19,5 +19,11 @@ urlpatterns = [
         "members/",
         OrganizationMembersAPIView.as_view(),
         name="organization-members",
+    ),
+
+    path(
+    "members/<int:membership_id>/role/",
+    ChangeMemberRoleAPIView.as_view(),
+    name="change-member-role",
     ),
 ]

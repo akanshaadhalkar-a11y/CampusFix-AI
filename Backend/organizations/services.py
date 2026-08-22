@@ -99,6 +99,7 @@ def create_organization(
 
 @transaction.atomic
 def join_organization(*, user, code):
+
     from .models import Organization, Membership
 
     code = code.strip().upper()
@@ -119,5 +120,42 @@ def join_organization(*, user, code):
         organization=organization,
         role="MEMBER",
     )
+
+    return membership
+
+@transaction.atomic
+def change_member_role(*, admin_user, membership_id, new_role):
+    from .models import Membership
+
+    try:
+        admin_membership = Membership.objects.get(
+            user=admin_user,
+            role="ADMIN",
+        )
+    except Membership.DoesNotExist:
+        raise ValueError(
+            "Only organization admins can change member roles."
+        )
+
+    try:
+        membership = Membership.objects.select_related(
+            "organization",
+            "user",
+        ).get(id=membership_id)
+    except Membership.DoesNotExist:
+        raise ValueError("Membership does not exist.")
+
+    if membership.organization_id != admin_membership.organization_id:
+        raise ValueError(
+            "You cannot manage members from another organization."
+        )
+
+    if membership.user_id == admin_user.id:
+        raise ValueError(
+            "You cannot change your own role."
+        )
+
+    membership.role = new_role
+    membership.save(update_fields=["role"])
 
     return membership

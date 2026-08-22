@@ -28,6 +28,7 @@ class JoinOrganizationSerializer(serializers.Serializer):
     )      
 
 class MembershipSerializer(serializers.ModelSerializer):
+
     username = serializers.CharField(source="user.username")
     email = serializers.EmailField(source="user.email")
 
@@ -40,3 +41,8 @@ class MembershipSerializer(serializers.ModelSerializer):
             "role",
             
         ]
+
+class ChangeMemberRoleSerializer(serializers.Serializer):
+    role = serializers.ChoiceField(
+        choices=Membership.ROLE_CHOICES
+    )        

@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import OrganizationSerializer,JoinOrganizationSerializer,MembershipSerializer
-from .services import create_organization , join_organization
+from .serializers import OrganizationSerializer,JoinOrganizationSerializer,MembershipSerializer,ChangeMemberRoleSerializer
+from .services import create_organization , join_organization,change_member_role
 
 from .models import Membership
 
@@ -87,6 +87,37 @@ class OrganizationMembersAPIView(APIView):
         return Response(
             {
                 "members": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+class ChangeMemberRoleAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, membership_id):
+        serializer = ChangeMemberRoleSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            membership = change_member_role(
+                admin_user=request.user,
+                membership_id=membership_id,
+                new_role=serializer.validated_data["role"],
+            )
+        except ValueError as error:
+            return Response(
+                {"error": str(error)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {
+                "message": "Member role updated successfully.",
+                "member": MembershipSerializer(
+                    membership
+                ).data,
             },
             status=status.HTTP_200_OK,
         )
