@@ -4,9 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import OrganizationSerializer,JoinOrganizationSerializer
+from .serializers import OrganizationSerializer,JoinOrganizationSerializer,MembershipSerializer
 from .services import create_organization , join_organization
 
+from .models import Membership
 
 class CreateOrganizationAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -65,3 +66,27 @@ class JoinOrganizationAPIView(APIView):
     },
     status=status.HTTP_201_CREATED,
 )
+
+class OrganizationMembersAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_organizations = Membership.objects.filter(
+            user=request.user
+        ).values_list("organization_id", flat=True)
+
+        memberships = Membership.objects.filter(
+            organization_id__in=user_organizations
+        ).select_related("user", "organization")
+
+        serializer = MembershipSerializer(
+            memberships,
+            many=True,
+        )
+
+        return Response(
+            {
+                "members": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )

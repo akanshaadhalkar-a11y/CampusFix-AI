@@ -1,18 +1,23 @@
 from django.urls import path
 
-from .views import CreateOrganizationAPIView,JoinOrganizationAPIView
+from .views import CreateOrganizationAPIView,JoinOrganizationAPIView,OrganizationMembersAPIView
 
 
 urlpatterns = [
+
     path(
         "",
         CreateOrganizationAPIView.as_view(),
         name="create-organization",
     ),
-
-     path(
+    path(
         "join/",
         JoinOrganizationAPIView.as_view(),
         name="join-organization",
+    ),
+    path(
+        "members/",
+        OrganizationMembersAPIView.as_view(),
+        name="organization-members",
     ),
 ]
