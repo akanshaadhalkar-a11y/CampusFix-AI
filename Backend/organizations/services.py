@@ -56,6 +56,7 @@ def validate_custom_organization_code(code):
 
 @transaction.atomic
 def create_organization(
+
     *,
     user,
     name,
@@ -95,3 +96,28 @@ def create_organization(
     )
 
     return organization
+
+@transaction.atomic
+def join_organization(*, user, code):
+    from .models import Organization, Membership
+
+    code = code.strip().upper()
+
+    try:
+        organization = Organization.objects.get(code=code)
+    except Organization.DoesNotExist:
+        raise ValueError("Organization with this code does not exist.")
+
+    if Membership.objects.filter(
+        user=user,
+        organization=organization
+    ).exists():
+        raise ValueError("You are already a member of this organization.")
+
+    membership = Membership.objects.create(
+        user=user,
+        organization=organization,
+        role="MEMBER",
+    )
+
+    return membership

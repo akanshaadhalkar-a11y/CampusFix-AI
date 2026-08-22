@@ -19,3 +19,9 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "code",
             "created_at",
         ]
+
+class JoinOrganizationSerializer(serializers.Serializer):
+    code = serializers.CharField(
+        max_length=20,
+        required=True
+    )      
